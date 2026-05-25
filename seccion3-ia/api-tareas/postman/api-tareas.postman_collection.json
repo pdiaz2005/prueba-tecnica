@@ -1,0 +1,381 @@
+{
+  "info": {
+    "name": "API Tareas",
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "description": "Colección de pruebas para la API de gestión de tareas",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "tareaId",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Tareas",
+      "item": [
+        {
+          "name": "POST /tareas - Crear tarea válida",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/tareas", "host": ["{{baseUrl}}"], "path": ["tareas"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Implementar autenticación\",\n  \"descripcion\": \"Agregar JWT al proyecto\",\n  \"prioridad\": \"ALTA\",\n  \"idResponsable\": 1,\n  \"fechaLimite\": \"2026-12-31\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Retorna id', () => pm.expect(pm.response.json()).to.have.property('id'));",
+                  "pm.collectionVariables.set('tareaId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /tareas - Sin título (422)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/tareas", "host": ["{{baseUrl}}"], "path": ["tareas"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descripcion\": \"Sin titulo\",\n  \"prioridad\": \"MEDIA\",\n  \"idResponsable\": 1,\n  \"fechaLimite\": \"2026-12-31\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 422', () => pm.response.to.have.status(422));",
+                  "pm.test('Mensaje de validación', () => pm.expect(pm.response.json()).to.have.property('details'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /tareas - Prioridad inválida (422)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/tareas", "host": ["{{baseUrl}}"], "path": ["tareas"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Tarea con prioridad inválida\",\n  \"prioridad\": \"URGENTE\",\n  \"idResponsable\": 1,\n  \"fechaLimite\": \"2026-12-31\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 422', () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /tareas - Fecha en el pasado (422)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/tareas", "host": ["{{baseUrl}}"], "path": ["tareas"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Tarea vencida\",\n  \"prioridad\": \"BAJA\",\n  \"idResponsable\": 1,\n  \"fechaLimite\": \"2020-01-01\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 422', () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /tareas - Listar todas",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/tareas", "host": ["{{baseUrl}}"], "path": ["tareas"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Retorna array', () => pm.expect(pm.response.json()).to.have.property('data'));",
+                  "pm.test('Tiene meta', () => pm.expect(pm.response.json()).to.have.property('meta'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /tareas - Filtrar por estado",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/tareas?estado=PENDIENTE",
+              "host": ["{{baseUrl}}"],
+              "path": ["tareas"],
+              "query": [{ "key": "estado", "value": "PENDIENTE" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /tareas - Filtrar por responsable",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/tareas?responsable=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["tareas"],
+              "query": [{ "key": "responsable", "value": "1" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /tareas - Filtrar por rango de fechas",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/tareas?desde=2026-01-01&hasta=2026-12-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["tareas"],
+              "query": [
+                { "key": "desde", "value": "2026-01-01" },
+                { "key": "hasta", "value": "2026-12-31" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /tareas - Paginación",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/tareas?page=1&limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["tareas"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "5" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /tareas/:id/estado - Cambiar a EN_PROGRESO",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/tareas/{{tareaId}}/estado",
+              "host": ["{{baseUrl}}"],
+              "path": ["tareas", "{{tareaId}}", "estado"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"EN_PROGRESO\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Estado actualizado', () => pm.expect(pm.response.json().estado).to.eql('EN_PROGRESO'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /tareas/:id/estado - Cambiar a COMPLETADA",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/tareas/{{tareaId}}/estado",
+              "host": ["{{baseUrl}}"],
+              "path": ["tareas", "{{tareaId}}", "estado"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"COMPLETADA\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Estado actualizado', () => pm.expect(pm.response.json().estado).to.eql('COMPLETADA'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /tareas/:id/estado - Estado inválido (422)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/tareas/{{tareaId}}/estado",
+              "host": ["{{baseUrl}}"],
+              "path": ["tareas", "{{tareaId}}", "estado"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"ARCHIVADA\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 422', () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /tareas/:id/estado - ID inexistente (404)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/tareas/999999/estado",
+              "host": ["{{baseUrl}}"],
+              "path": ["tareas", "999999", "estado"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"CANCELADA\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /tareas/resumen - Por responsable",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/tareas/resumen?responsable=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["tareas", "resumen"],
+              "query": [{ "key": "responsable", "value": "1" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Tiene totales', () => pm.expect(pm.response.json()).to.have.property('total'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /tareas/resumen - Sin responsable (422)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/tareas/resumen",
+              "host": ["{{baseUrl}}"],
+              "path": ["tareas", "resumen"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 422', () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
